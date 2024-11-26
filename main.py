@@ -1,3 +1,4 @@
+from modules.user_interaction import bla, text
 # swagger: http://hackathons.masterschool.com:3030/api-docs/#/
 # teamname: Attraction
 
@@ -10,7 +11,6 @@
 
 
 # fetch attraction places from api
-
 # user init:
 # - location
 # - type of attraction
@@ -35,3 +35,5 @@ TYPE $attractin_type
 3. send sms
 """
 
+
+bla(text)
