@@ -1,11 +1,3 @@
-from phonenumber import register_number, unregister_number
-from blabla import send_sms
-
-
-
-register_number(34823745845)
-send_sms(text, phone_number)
-
 # swagger: http://hackathons.masterschool.com:3030/api-docs/#/
 # teamname: Attraction
 
@@ -33,7 +25,7 @@ send_sms(text, phone_number)
 """ sms code words:
 SUBSCRIBE $phone_number
 LOCATION $location
-TYPE $attractin_type 
+TYPE $attractin_type
 """
 
 
