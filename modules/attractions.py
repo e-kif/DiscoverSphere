@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 import requests
 import os
-from requests.structures import CaseInsensitiveDict
 load_dotenv()
 
 
@@ -37,14 +36,14 @@ def fetch_attractions(lat, long, radius, attr_type, api_key):
 def displayer(attractions):
     """Display a list of attraction to the user"""
     if not attractions:
-        print("No Attractions found with given Info.")
-        return
+        return False, f"No Attractions found with given Info."
+
     print("\nAttractions found: ")
 
     for attraction in attractions:
         name = attraction["properties"].get("name", "unnamed")
         category = attraction["properties"].get("categories", [])
-        print(f"Name :{name}, Categories: {category}")
+        return True, f"Name :{name}, Categories: {category}"
 
     #  fetch attraction places from api given location and attraction type
     #  https://apidocs.geoapify.com/playground/places/
