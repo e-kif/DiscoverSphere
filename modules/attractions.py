@@ -18,8 +18,10 @@ def fetch_attractions(lat, long, radius, attr_type, api_key):
         """
     url = "https://api.geoapify.com/v2/places"
     params = {
-        "categories": attr_type,
+        "categories": attr_type,  # e.g. tourism.attraction or 1.2 in screenshot
+        # radius in meters from center. e.g. '5000' for 5km
         "filter": f"circle:{long},{lat},{radius}",
+        # results limit
         "limit": 10,
         "apiKey": api_key
     }
