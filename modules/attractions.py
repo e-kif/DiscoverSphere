@@ -33,6 +33,19 @@ def fetch_attractions(lat, long, radius, attr_type, api_key):
         print(f"Error: {e}")
         return []
 
+
+def displayer(attractions):
+    """Display a list of attraction to the user"""
+    if not attractions:
+        print("No Attractions found with given Info.")
+        return
+    print("\nAttractions found: ")
+
+    for attraction in attractions:
+        name = attraction["properties"].get("name", "unnamed")
+        category = attraction["properties"].get("categories", [])
+        print(f"Name :{name}, Categories: {category}")
+
     #  fetch attraction places from api given location and attraction type
     #  https://apidocs.geoapify.com/playground/places/
 
