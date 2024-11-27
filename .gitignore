@@ -4,3 +4,4 @@
 modules/__pycache__
 modules/temp.py
 storage/app.log
+modules/app.log
