@@ -1,8 +1,24 @@
+import requests
+
+
+
 """ sms code words:
 SUBSCRIBE $phone_number
 LOCATION $location
-TYPE $attractin_type
+TYPE $attraction_type
+MORE
 """
 
 
-# parce response, create sms text (<= 160 symbols or <= 70 for umlauts)
+
+# parse response, create sms text (<= 160 symbols or <= 70 for umlauts)
+
+def main():
+    pass
+
+
+if __name__ == '__main__':
+    main()
+
+
+# SUBSCRIBE Attraction

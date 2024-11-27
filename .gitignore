@@ -1,3 +1,5 @@
 .env
 .idea
 .venv
+modules/__pycache__
+modules/temp.py
