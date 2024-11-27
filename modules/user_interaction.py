@@ -1,17 +1,12 @@
-import requests
+from datetime import datetime
+
+# from modules.messages_manager import register_number, unregister_number, read_messages, send_message
 
 
+def add_log_record(status: int, record: str, log_file: str = 'app.log'):
+    with open(log_file, 'a', encoding='utf8') as log:
+        log.write(f'{datetime.now()}\t{status} {record}\n')
 
-""" sms code words:
-SUBSCRIBE $phone_number
-LOCATION $location
-TYPE $attraction_type
-MORE
-"""
-
-
-
-# parse response, create sms text (<= 160 symbols or <= 70 for umlauts)
 
 def main():
     pass
@@ -19,6 +14,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-# SUBSCRIBE Attraction
