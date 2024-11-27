@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 
 from modules.messages_manager import register_number, unregister_number, read_messages, send_message
 
@@ -7,9 +8,13 @@ sms_commands = {}
 TEAM_NAME = 'Attraction'
 
 
-def add_log_record(status: int, record: str, log_file: str = 'app.log'):
-    with open(log_file, 'a', encoding='utf8') as log:
-        log.write(f'{datetime.now()}\t{status} {record}\n')
+def add_log_record(status: int, record: str, log_filename: str = os.path.join('..', 'storage', 'app.log')):
+    if os.path.exists(log_filename):
+        with open(log_filename, 'a', encoding='utf8') as log:
+            log.write(f'{datetime.now()}\t{status} {record}\n')
+    else:
+        with open(log_filename, 'w+', encoding='utf8') as log:
+            log.write(f'{datetime.now()}\t{status} {record}\n')
 
 
 def subscribe_user(user_number: int, text: str, team: str = TEAM_NAME) -> int:
@@ -66,7 +71,7 @@ sms_commands.update({
 
 
 def main():
-    print(sms_commands)
+    add_log_record(200, 'Log test')
 
 
 if __name__ == '__main__':
