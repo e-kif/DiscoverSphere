@@ -13,8 +13,25 @@ def get_api_key():
     return api_key
 
 
-def fetch_attractions():
-    pass
+def fetch_attractions(lat, long, radius, attr_type, api_key):
+    """Fetch desired attraction creating a unique request
+       regarding users likes
+        """
+    url = "https://api.geoapify.com/v2/places"
+    params = {
+        "categories": attr_type,
+        "filter": f"circle:{long},{lat},{radius}",
+        "limit": 10,
+        "apiKey": api_key
+    }
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        return data.get("features", [])
+    except requests.exceptions.RequestException as e:
+        print(f"Error: {e}")
+        return []
 
     #  fetch attraction places from api given location and attraction type
     #  https://apidocs.geoapify.com/playground/places/
