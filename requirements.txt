@@ -2,3 +2,5 @@ datetime
 json
 python-dotenv
 requests
+os
+dotenv
