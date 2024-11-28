@@ -1,9 +1,6 @@
 from dotenv import load_dotenv
 from datetime import datetime
-import json
 import os
-from random import randint
-import requests
 
 from modules.messages_manager import register_number, unregister_number, read_messages, send_message
 from modules.sms_builder import welcome_text, goodbye_text, city_not_found_text
@@ -21,10 +18,21 @@ def add_log_record(status: int, record: str, log_file: str = DEV_LOG):
         log.write(f'{datetime.now()}\t{status} {record}\n')
 
 
-def subscribe_user(user_number: int, text: str = '', team: str = TEAM_NAME) -> int:
+def obfuscate(func):
+    def inner(user_number, text='', team=TEAM_NAME):
+        obfuscated_user_number = (len(str(user_number)) - 4) * '*' + str(user_number)[-4:]
+        return func(user_number, obfuscated_user_number, text, team)
+        # return func(user_number, '', text, team)
+    return inner
+
+
+@obfuscate
+def subscribe_user(user_number: int, obfuscated_number: str = '', text: str = '', team: str = TEAM_NAME) -> int:
     if text:
         text = f' ({text})'
-    add_log_record(100, f'Subscribing number {user_number} to {team} group{text}')
+    if not obfuscated_number:
+        obfuscated_number = str(user_number)
+    add_log_record(100, f'Subscribing number {obfuscated_number} to {team} group{text}')
     code, message = register_number(user_number)
     if code == 200:
         add_log_record(code, f'User {user_number} was successfully subscribed to {team}')
@@ -37,10 +45,13 @@ def subscribe_user(user_number: int, text: str = '', team: str = TEAM_NAME) -> i
     return code
 
 
-def unsubscribe_user(user_number: int, text: str = '', team: str = TEAM_NAME) -> int:
+@obfuscate
+def unsubscribe_user(user_number: int, obfuscated_number: str = '', text: str = '', team: str = TEAM_NAME) -> int:
     if text:
         text = f' ({text})'
-    add_log_record(100, f'Unsubscribing {user_number} from "{team}"{text}')
+    if not obfuscated_number:
+        obfuscated_number = user_number
+    add_log_record(100, f'Unsubscribing {obfuscated_number} from "{team}"{text}')
     code, message = unregister_number(user_number)
     add_log_record(code, message)
     if code == 200:
@@ -52,8 +63,13 @@ def unsubscribe_user(user_number: int, text: str = '', team: str = TEAM_NAME) ->
     return code
 
 
-def set_location():
-    # TODO implement
+def set_location(user_number: int, obfuscated_number: str = '', text: str = '', team: str = TEAM_NAME):
+    # todo save location info to storage
+    # todo generate sms request for types
+
+    # code, message = send_message(user_number, sms_text)
+    # return code, message
+
     pass
 
 
@@ -82,12 +98,10 @@ sms_commands.update({
 })
 
 
-
-
-
 def main():
-    subscribe_user(some_phone_number)
-    unsubscribe_user(some_phone_number)
+    # subscribe_user(some_phone_number)
+    # unsubscribe_user(some_phone_number)
+    subscribe_user(123)
 
 
 if __name__ == '__main__':
