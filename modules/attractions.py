@@ -65,7 +65,8 @@ def fetch_attractions(lat, long, radius, attr_type, api_key):
         "filter": f"circle:{long},{lat},{radius}",
         # results limit
         "limit": 10,
-        "apiKey": api_key
+        "apiKey": api_key,
+        "lang": "en"
     }
     try:
         response = requests.get(url, params=params)
