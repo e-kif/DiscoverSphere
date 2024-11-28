@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import json
 from random import randint
 import requests
+import string
 
 
 load_dotenv()
@@ -16,7 +17,7 @@ def get_random_item(env_key: str) -> str:
     return items[index]
 
 
-def get_attractions_list(storage: str = os.path.join('static', 'attractions_types.json')) -> list:
+def get_attractions_list(storage: str = os.path.join('..', 'static', 'attractions_types.json')) -> list:
     with open(storage, 'r', encoding='utf8') as file:
         attractions = json.loads(file.read())
     all_attractions = []
@@ -57,9 +58,31 @@ def city_not_found_text():
 
 
 def attraction_type_text(location):
+    start = f'Provide places type for {location}. Examples:\n'
+    end = f'TYPE surprise\nFull list: {ATTRACTIONS}'
+    for _ in range(30):
+        if not all([char in string.ascii_letters + ' ' for char in location]):
+            break
+        type1 = get_random_attraction_type()
+        while True:
+            type2 = get_random_attraction_type()
+            if type2 != type1:
+                break
+        type1 = f'TYPE {type1}\n'
+        type2 = f'TYPE {type2}\n'
+        full_text = start + type1 + type2 + end
+        if len(full_text) < 171:
+            return full_text
     type1 = get_random_attraction_type()
-    type2 = get_random_attraction_type()
-
+    while True:
+        type2 = get_random_attraction_type()
+        if type2 != type1:
+            break
+    type1 = f'TYPE {type1}\n'
+    type2 = f'TYPE {type2}\n'
+    start = 'Provide places type. Examples:\n'
+    full_text = start + type1 + type2 + end
+    return full_text if len(full_text) < 171 else start + type1 + end
 
 
 def main():
