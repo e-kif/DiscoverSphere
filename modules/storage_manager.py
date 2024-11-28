@@ -53,15 +53,13 @@ def save_messages_api(team_name: str) -> None:
     api_messages = read_messages(team_name)
 
     if isinstance(api_messages, dict):
-        refactored_messages = {}
 
         for number, msg_list in api_messages.items():
             if isinstance(msg_list, list):
-                for message in msg_list:
-                    refactored_messages[number] = message
+                api_messages[number] = msg_list
 
-        if refactored_messages:
-            save_message(refactored_messages)
+        if api_messages:
+            save_message(api_messages)
 
 
 """def get_message_by_id(message_id: int) -> dict:
