@@ -73,8 +73,13 @@ def fetch_attractions(lat, long, radius, attr_type, api_key):
         data = response.json()
         return response.status_code, data.get("features", [])
     except requests.exceptions.RequestException as e:
-        print(f"Error: {e}")
-        return 500, None
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        if 'apiKey' in str(e):
+            print(f"Error: Something unexpected happened while fetching attractions.")
+        else:
+            print(f"Error: {e}")
+        return response.status_code, e
 
 
 def search_and_display(city_name, attraction_type, radius=5000):
