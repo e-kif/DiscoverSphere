@@ -38,7 +38,6 @@ def geocode_city_finder(city_name, api_key):
             location = data["features"][0]["geometry"]["coordinates"]
             return location[1], location[0]
         else:
-            print(f"City '{city_name}' not found,")
             return None
     except requests.exceptions.RequestException as e:
         print(f"Error fetching location: {e} ")
@@ -106,9 +105,6 @@ def final_fetch(lat, long, radius, attr_type, api_key):
     results = []
     for attr in attractions:
         # Extract details name and short url
-        original_name = attr["properties"]["name"]
-        eng_name = attr["properties"]["datasource"]["raw"].get("name:en", "I DONT HAVE AN EN NAME")
-        formatted = attr['properties']['formatted']
         address_line1 = attr["properties"]["address_line1"]
         coord = attr["geometry"]["coordinates"]
         url_base = "https://www.google.com/maps/place/"
