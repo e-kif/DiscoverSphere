@@ -29,7 +29,7 @@ def save_message(messages: dict) -> None:
     """
 
     with open(STORAGE_FILE, "w", encoding="utf-8") as file:
-        json.dump(messages, file, indent=4)
+        json.dump(messages, file, ensure_ascii=False, indent=4)
 
 
 def get_all_messages() -> dict:
