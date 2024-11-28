@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 import requests
 import os
+from sms_builder import make_url_short
 load_dotenv()
 
 
@@ -84,6 +85,41 @@ def fetch_attractions(lat, long, radius, attr_type, api_key):
         return response.status_code, e
 
 
+def final_fetch(lat, long, radius, attr_type, api_key):
+    """
+    Uses the existing fetch_attractions() to process the attractions
+    and returns a tuple with code and list of names and short url.
+
+        lat (float): Latitude of the location.
+        long (float): Longitude of the location.
+        radius (int): Radius for the search in meters.
+        attr_type (str): Category of the attraction.
+        api_key (str):API key.
+
+    :return: tuple: HTTP status code and list of tuples (name, short url).
+    """
+    status_code, attractions = fetch_attractions(lat, long, radius, attr_type, api_key)
+
+    if status_code != 200 or not attractions:
+        return status_code, []
+
+    results = []
+    for attr in attractions:
+        # Extract details name and short url
+        original_name = attr["properties"]["name"]
+        eng_name = attr["properties"]["datasource"]["raw"].get("name:en", "I DONT HAVE AN EN NAME")
+        formatted = attr['properties']['formatted']
+        address_line1 = attr["properties"]["address_line1"]
+        coord = attr["geometry"]["coordinates"]
+        url_base = "https://www.google.com/maps/place/"
+        url_attr = f"{url_base}{coord[1]}{coord[0]}"
+        short_url = make_url_short(url_attr)
+        if address_line1:
+            results.append((address_line1, short_url))
+
+    return status_code, results
+
+
 def search_and_display(city_name, attraction_type, radius=5000):
     """
     Fetch city coord, search for attractions and return tuple result.
@@ -111,25 +147,20 @@ def search_and_display(city_name, attraction_type, radius=5000):
 
     return status_code, attractions
 
-# Testing example, yevhen you can delete after usage
 
-
+# Test this example
 if __name__ == "__main__":
-    # Example inputs from User
-    city = "Kiev"
-    attraction_category = "tourism_attraction"
+    geo_key = get_api_key()
+    lat = 35.6895  # Tokyo Latitude
+    lon = 139.6917  # Tokyo Longitude
+    radius = 7000
+    attr_type = "tourism.attraction"  # Example: Attraction category
 
-    # Call the search_and_display function with example inputs
-    status, result = search_and_display(city, attraction_category, radius=5000)
+    code, attractions = final_fetch(lat, lon, radius, attr_type, geo_key)
 
-    if status == 200 and result:
-        print("\nAttractions found: ")
-        # API results, use those
-        for attraction in result:
-            name = attraction["properties"].get("name", "unnamed")
-            category = attraction["properties"].get("categories", [])
-            print(f"Name: {name}, Categories: {category}")
-    elif status == 404:
-        print("City not found or invalid input")  # examples
-    elif status == 500:
-        print("Error fetching attractions. Please try again later.")  # examples
+    if code == 200 and attractions:
+        print("\nAttractions Found in Tokyo:")
+        for name, url in attractions:
+            print(f"Name: {name}, Shortened URL: {url}")
+    else:
+        print(f"Failed to fetch attractions in Tokyo. HTTP Status Code: {code}")
