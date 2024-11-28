@@ -63,7 +63,8 @@ def user_exists(phone_number: str) -> bool:
     return phone_number in users
 
 
-def init_user(phone_number, location, attr_type, attractions, index: int = 0) -> None:
+def init_user(phone_number, location: str = '', attr_type: str = '',
+              attractions: str = '', index: int = 0) -> None:
     """
     Init a user to the storage
 
@@ -147,11 +148,11 @@ def main():
             attractions=attractions
         )
     else:
-        print(f"Failed to fetch attractions. HTTP Status Code: {status_code}")
+        return f"Failed to fetch attractions. HTTP Status Code: {status_code}"
 
     # Fetch user data
     user_data = get_user("1234567890")
-    print(user_data)
+    return user_data
 
 
 if __name__ == "__main__":
