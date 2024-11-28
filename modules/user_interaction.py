@@ -3,9 +3,10 @@ from datetime import datetime
 import os
 
 from modules.messages_manager import register_number, unregister_number, read_messages, send_message
-from modules.sms_builder import welcome_text, goodbye_text, city_not_found_text, attraction_type_text
+import modules.sms_builder as sms_builder
 from modules.storage_manager import save_message, get_all_messages
-from modules.attractions import geocode_city_finder
+from modules.attractions import geocode_city_finder, final_fetch
+import modules.storage_users as storage_users
 
 load_dotenv()
 some_phone_number = int(os.getenv('some_number'))
@@ -30,7 +31,6 @@ def obfuscate(func):
         obfuscated_user_number = (len(str(user_number)) - 4) * '*' + str(user_number)[-4:]
         return func(user_number, obfuscated_user_number, text, team)
         # return func(user_number, '', text, team)
-
     return inner
 
 
@@ -81,8 +81,18 @@ def process_new_message(message: dict, commands: dict = sms_commands):
         return commands['DOCS'](user_number=user_number, text=text)
 
 
+def user_doesnt_exist(user_number):
+    if not storage_users.user_exists(user_number):
+        if SEND_SMS:
+            sms_text = sms_builder.subscribe_text()
+            code, message = send_message(user_number, sms_text)
+            return True, (code, message)
+        return True, (200, 'sms sort of sent')
+    return False
+
+
 @obfuscate
-def subscribe_user(user_number: int, obfuscated_number: str = '', text: str = '', team: str = TEAM_NAME) -> int:
+def subscribe_user(user_number: int, obfuscated_number: str = '', text: str = '', team: str = TEAM_NAME) -> (int, str):
     """Adds user to a team group, adds user info to a storage,
     sends welcome sms that asks for location, adds some logs.
     """
@@ -96,18 +106,21 @@ def subscribe_user(user_number: int, obfuscated_number: str = '', text: str = ''
     code, message = register_number(user_number) # todo add a team as parameter
     if code == 200:
         add_log_record(code, f'User {user_number} was successfully subscribed to {team}')
-        # TODO add new user to persistent storage (set location, type, index to none)
+        storage_users.init_user(user_number, None, None, None)
         if SEND_SMS:
-            sms_text = welcome_text()
+            sms_text = sms_builder.welcome_text()
             sms_code, sms_message = send_message(user_number, sms_text)
             add_log_record(sms_code, sms_message)
-            return sms_code
+            return sms_code, sms_message
     add_log_record(code, message)
-    return code
+    return code, message
 
 
 @obfuscate
-def unsubscribe_user(user_number: int, obfuscated_number: str = '', text: str = '', team: str = TEAM_NAME) -> int:
+def unsubscribe_user(user_number: int,
+                     obfuscated_number: str = '',
+                     text: str = '',
+                     team: str = TEAM_NAME) -> (int, str):
     """Unregisters user from a team group, sends farewell sms, adds logs"""
     if DEBUG: print(f'removing {user_number} from {team}')
     if text:
@@ -120,11 +133,11 @@ def unsubscribe_user(user_number: int, obfuscated_number: str = '', text: str = 
     add_log_record(code, message)
     if code == 200:
         if SEND_SMS:
-            sms_text = goodbye_text()
+            sms_text = sms_builder.goodbye_text()
             sms_code, sms_message = send_message(user_number, sms_text)
             add_log_record(sms_code, sms_message)
-            return sms_code
-    return code
+            return sms_code, sms_message
+    return code, message
 
 
 def set_location(user_number: int,
@@ -133,21 +146,23 @@ def set_location(user_number: int,
                  team: str = TEAM_NAME) -> (int, str):
     """Checks if location exists, if not - send sms. Saves location to a storage. Sends """
     if DEBUG: print(f'this should set location to {text} for {user_number} ({text=})')
+    if user_doesnt_exist(user_number):
+        return 400, 'User should subscribe first'
     coords = geocode_city_finder(text, os.getenv('GEOAPIFY_API_KEY'))
     if not coords:
-        sms_text = city_not_found_text()
+        sms_text = sms_builder.city_not_found_text()
         if DEBUG: print(sms_text)
         if SEND_SMS:
             sms_code, sms_message = send_message(user_number, sms_text)
             return f'400 {sms_code}', f'City not found. {sms_message}'
-    # todo save location info to a storage
-    # todo empty type and index in storage
-    sms_text = attraction_type_text(text)
+    storage_users.set_user_attribute(str(user_number), 'location', text)
+    storage_users.set_user_attribute(str(user_number), 'type', None)
+    storage_users.set_user_attribute(str(user_number), 'attraction', None)
+    sms_text = sms_builder.attraction_type_text(text)
     if DEBUG: print(f'sending message: {sms_text}')
     if SEND_SMS:
         sms_code, sms_message = send_message(user_number, sms_text)
         return sms_code, sms_message
-
     # todo log the process
     return coords
 
@@ -160,16 +175,31 @@ def set_attraction_type(user_number: int,
     Fetches and a list of attractions. If type is not 'surprise' saves a list of attractions to a storage.
     Sends attraction info to the user. Logs the process."""
     if DEBUG: print(f'this should set attraction type to {text} for {user_number} ({text=})')
-    # todo validate attraction type (send sms if false)
-    # todo write type to a storage
-    # todo read location from storage
-    # todo fetch attractions
-    # todo implement surprise type
+    if user_doesnt_exist(user_number):
+        return 400, 'User should subscribe first'
+    api = os.getenv('GEOAPIFY_API_KEY')
+    attractions = sms_builder.get_attractions_list()
+    if text not in attractions:
+        if SEND_SMS:
+            sms_text = sms_builder.wrong_attraction_text(text)
+            sms_code, sms_message = send_message(user_number, sms_text)
+            return sms_code, sms_message
+        return 400
+    # todo write attraction type to a storage
+    location = 'Tokio' # todo read location from storage
     # todo write attractions to a storage
+    start = ''
+    if text == 'surprise':
+        text = sms_builder.get_random_attraction_type()
+        start = f'Your surprise is {text}'
+    coords = geocode_city_finder(location, api)
+    code, message = final_fetch(coords[0], coords[1], 7000, text, os.getenv(api))
+    if DEBUG: print(code, message)
+
     # todo send sms
+    # todo implement surprise type
     # todo write attraction index to a storage
     # todo log the process
-    pass
 
 
 def send_next_attraction(user_number: int,
@@ -178,6 +208,8 @@ def send_next_attraction(user_number: int,
                          team: str = TEAM_NAME) -> (int, str):
     """Gets user info from a storage, sends nex attraction that corresponds to previous user's requests"""
     if DEBUG: print(f'this should send next attraction to {user_number} ({text=})')
+    if user_doesnt_exist(user_number):
+        return 400, 'User should subscribe first'
     # todo read location info from a storage
     # todo read type info from a storage
     # todo read index from a storage
@@ -194,6 +226,8 @@ def send_documentation(user_number: int,
                        team: str = TEAM_NAME) -> (int, str):
     """Sends sms to a user with available commands"""
     if DEBUG: print(f'this should send docs to {user_number} ({text=})')
+    if user_doesnt_exist(user_number):
+        return 400, 'User should subscribe first'
     # todo generate/read text
     # todo send sms
     # todo log the process
@@ -213,14 +247,15 @@ sms_commands.update({
 def main():
     """Function for testing module's functions without importing them"""
 
-    test_messages = [{'123': {'text': 'LOCATION Frankfurt', 'receivedAt': '2024-11-27T09:32:59.322+0000'}}]
+    test_messages = [{'12': {'text': 'LOCATION Attraction', 'receivedAt': '2024-11-27T09:32:59.322+0000'}}]
     test_message = test_messages[0]
     # subscribe_user(some_phone_number)
     # unsubscribe_user(some_phone_number)
     # code1, messages1 = read_messages('TeamABC')
     # code2, messages2 = read_messages('WaterProof')
-    coords = process_new_message(test_message)
-    print(f'{coords=}')
+    code, message = process_new_message(test_message)
+    print(f'{code=}')
+    print(f'{message=}')
 
 
     pass

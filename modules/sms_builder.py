@@ -46,6 +46,10 @@ def goodbye_text():
     return get_random_item('farewells')
 
 
+def subscribe_text():
+    return get_random_item('subscribe_first')
+
+
 def welcome_text():
     start = get_random_item('onboards')
     middle = ' Reply with a city of your dreams. Example:\nLOCATION '
@@ -57,11 +61,11 @@ def city_not_found_text():
     return get_random_item('not_found') + get_random_item('cities')
 
 
-def attraction_type_text(location):
+def attraction_type_text(location: str = ''):
     start = f'Provide places type for {location}. Examples:\n'
     end = f'TYPE surprise\nFull list: {ATTRACTIONS}'
     for _ in range(30):
-        if not all([char in string.ascii_letters + ' ' for char in location]):
+        if not all([char in string.ascii_letters + ' ' for char in location]) or not location:
             break
         type1 = get_random_attraction_type()
         while True:
@@ -85,8 +89,29 @@ def attraction_type_text(location):
     return full_text if len(full_text) < 171 else start + type1 + end
 
 
+def wrong_attraction_text(attr_type: str = ''):
+    type1 = get_random_attraction_type()
+    while True:
+        type2 = get_random_attraction_type()
+        if type2 != type1:
+            break
+    type1 = f'TYPE {type1}\n'
+    type2 = f'TYPE {type2}\n'
+    end = f'TYPE surprise\nFull list: {ATTRACTIONS}'
+    if attr_type and all([char in string.ascii_letters + ' ' for char in attr_type]):
+        start = f"Can't find {attr_type} among supported places types. Try again:\n"
+        full_text = start + type1 + type2 + end
+        if len(full_text) < 171:
+            return full_text
+    start = 'Wrong places type. Try some of these:\n'
+    return start + type1 + type2 + end
+
+
 def main():
-    pass
+    # text = wrong_attraction_text('sadfasdfadsf')
+    text = subscribe_text()
+    print(text)
+    print(len(text))
 
 
 if __name__ == '__main__':
