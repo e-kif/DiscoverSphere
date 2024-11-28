@@ -1,14 +1,15 @@
-from modules.user_interaction import bla, text
-# swagger: http://hackathons.masterschool.com:3030/api-docs/#/
-# teamname: Attraction
+import modules.user_interaction as ux
 
-# add team
+DEBUG = True
+SEND_SMS = False
 
-# register a phone number
-# unregister a phone number
-# read the messages
-# send a message
 
+
+# main loop
+
+# get messages
+# parse messages
+# execute commands
 
 # fetch attraction places from api
 # user init:
@@ -18,12 +19,6 @@ from modules.user_interaction import bla, text
 # persistent storage (keep track of app and user status and received messages
 
 # parce response, create sms text (<= 160 symbols or <= 70 for umlauts)
-
-""" sms code words:
-SUBSCRIBE $phone_number
-LOCATION $location
-TYPE $attractin_type
-"""
 
 
 """ main while loop:
@@ -35,5 +30,3 @@ TYPE $attractin_type
 3. send sms
 """
 
-
-bla(text)

@@ -89,6 +89,10 @@ def attraction_type_text(location: str = ''):
     return full_text if len(full_text) < 171 else start + type1 + end
 
 
+def newtype_text():
+    return get_random_item('new_type')
+
+
 def wrong_attraction_text(attr_type: str = ''):
     type1 = get_random_attraction_type()
     while True:
@@ -109,7 +113,7 @@ def wrong_attraction_text(attr_type: str = ''):
 
 def main():
     # text = wrong_attraction_text('sadfasdfadsf')
-    text = subscribe_text()
+    text = newtype_text()
     print(text)
     print(len(text))
 
