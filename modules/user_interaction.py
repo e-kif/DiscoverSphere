@@ -4,6 +4,7 @@ import os
 
 from modules.messages_manager import register_number, unregister_number, read_messages, send_message
 from modules.sms_builder import welcome_text, goodbye_text, city_not_found_text
+from modules.storage_manager import save_message, get_all_messages
 
 load_dotenv()
 some_phone_number = int(os.getenv('some_number'))
@@ -11,6 +12,7 @@ sms_commands = {}
 TEAM_NAME = 'Attraction'
 LOG_FILENAME = os.path.join('..', 'storage', 'app.log')
 DEV_LOG = 'app.log'
+SEND_SMS = False
 
 
 def add_log_record(status: int, record: str, log_file: str = DEV_LOG):
@@ -47,7 +49,10 @@ def get_new_messages(old: dict, new: dict) -> list:
     and are absent in old ones. Logs amount of returned messages.
     Overwrites messages' storage
     """
-    old_last_message = get_last_message_time(old)
+    if old:
+        old_last_message = get_last_message_time(old)
+    else:
+        old_last_message = datetime(1, 1, 1)
     new_last_message = get_last_message_time(new)
     if new_last_message == old_last_message:
         return []
@@ -57,7 +62,7 @@ def get_new_messages(old: dict, new: dict) -> list:
                          for message in sorted(messages, key=lambda a: str_to_datetime(a['receivedAt']))
                          if str_to_datetime(message['receivedAt']) > old_last_message]
     add_log_record(102, f'Found {len(new_messages)} new messages. Processing...')
-    # todo write new dict to storage
+    save_message(new)
     return new_messages
 
 
@@ -87,11 +92,12 @@ def subscribe_user(user_number: int, obfuscated_number: str = '', text: str = ''
     code, message = register_number(user_number)
     if code == 200:
         add_log_record(code, f'User {user_number} was successfully subscribed to {team}')
-        # sms_text = welcome_text()
-        # sms_code, sms_message = send_message(user_number, sms_text)
-        # add_log_record(sms_code, sms_message)
         # TODO add new user to persistent storage (set location, type, index to none)
-        # return sms_code
+        if SEND_SMS:
+            sms_text = welcome_text()
+            sms_code, sms_message = send_message(user_number, sms_text)
+            add_log_record(sms_code, sms_message)
+            return sms_code
     add_log_record(code, message)
     return code
 
@@ -107,11 +113,11 @@ def unsubscribe_user(user_number: int, obfuscated_number: str = '', text: str = 
     code, message = unregister_number(user_number)
     add_log_record(code, message)
     if code == 200:
-        sms_text = goodbye_text()
-        # sms_code, sms_message = send_message(user_number, sms_text)
-        # add_log_record(sms_code, sms_message)
-        # return sms_code
-    add_log_record(code, message)
+        if SEND_SMS:
+            sms_text = goodbye_text()
+            sms_code, sms_message = send_message(user_number, sms_text)
+            add_log_record(sms_code, sms_message)
+            return sms_code
     return code
 
 
@@ -191,6 +197,11 @@ def main():
     """Function for testing module's functions without importing them"""
     # subscribe_user(some_phone_number)
     # unsubscribe_user(some_phone_number)
+    code, messages = read_messages('TeamABC')
+    code, messages = read_messages('WaterProof')
+    old = get_all_messages()
+    new_messages = get_new_messages(old, messages)
+    print(new_messages)
     pass
 
 
