@@ -157,31 +157,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# todo check if a storage file exists
-
-# todo initiate storage file
-
-# todo check if a storage file empty
-
-# todo user init (phone number: int, location: str, type: str, places: list, index: int)
-
-# todo setters and getters for location, type, places, index
-
-"""
-example_struture = {
-    'user_number1': {  # phone number
-        'location': 'city name',  # city name
-        'type': 'attraction type',  # attr_type
-        'attractions': 'list of attractions from final_fetch',  # tuple of final_fetch() in attractions.py
-        'index': 'int'  # default 0
-    },
-    'user_number2': {
-        'location': 'city name',
-        'type': 'attraction type',
-        'attractions': 'list of attractions from final_fetch',
-        'index': 'int'
-    }
-}
-"""
