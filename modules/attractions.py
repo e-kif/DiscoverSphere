@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 import requests
 import os
-import re
 load_dotenv()
 
 
@@ -73,8 +72,7 @@ def fetch_attractions(lat, long, radius, attr_type, api_key):
         response.raise_for_status()
         data = response.json()
         attractions = data.get("features", [])
-        latin_filtered_attractions = filter_latin(attractions)
-        return response.status_code, latin_filtered_attractions
+        return response.status_code, attractions
     except requests.exceptions.RequestException as e:
         response = requests.get(url, params=params)
         response.raise_for_status()
@@ -83,27 +81,6 @@ def fetch_attractions(lat, long, radius, attr_type, api_key):
         else:
             print(f"Error: {e}")
         return response.status_code, e
-
-
-def filter_latin(attractions):
-    """
-    Filters only latin characters to be included in the attractions
-    Try that yevhen, stackoverflow says it's great.
-    API doesn't have a specific thing u can do about it, sadly :/
-
-    :param attractions: list of dicts of attractions
-
-    :return: filtered list of attractions with latin symbols only
-    """
-    latin_regex = re.compile("^[\x00-\x7F]+$")  # Match only Latin Characters ASCII range
-    latin_filter = []
-
-    for attraction_ in attractions:
-        name_ = attraction_.get("properties", {}).get("name", "")
-        if latin_regex.match(name_):
-            latin_filter.append(attraction_)
-
-    return latin_filter
 
 
 def search_and_display(city_name, attraction_type, radius=5000):
