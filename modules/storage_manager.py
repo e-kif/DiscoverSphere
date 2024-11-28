@@ -1,6 +1,7 @@
 import json
 import os
-from datetime import datetime
+# from datetime import datetime
+from messages_manager import read_messages
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STORAGE_DIR = os.path.join(BASE_DIR, "storage")
@@ -18,30 +19,15 @@ def init_storage() -> None:
             json.dump({}, file)
 
 
-def save_message(phone_number: str, message: str, response: str) -> None:
+def save_message(messages: dict) -> None:
     """
     Saves a message and its response to the json file
 
-    :param phone_number: Phone number of user
-    :param message: Message of user
-    :param response: API response text
+    param messages dict with keys as phone numbers and values are dict of message details
 
     :return: None
     """
-    with open(STORAGE_FILE, "r", encoding="utf-8") as file:
-        messages = json.load(file)
-    # Generate unique id
-    new_id = len(messages) + 1
-    # Create new message entry
-    messages[new_id] = {
-        "phone_number": phone_number,
-        "message": message,
-        "response": response,
-        "timestamp": datetime.now().isoformat()
-    }
 
-    # Appending and saving the data
-    messages.append(messages)
     with open(STORAGE_FILE, "w", encoding="utf-8") as file:
         json.dump(messages, file, indent=4)
 
@@ -56,31 +42,54 @@ def get_all_messages() -> dict:
         return json.load(file)
 
 
-def get_message_by_id(message_id: int) -> dict:
+def save_messages_api(team_name: str) -> None:
     """
+    Gets messages from the API and saves them to storage
+    dict only, no list wrappers
+
+    :param team_name: Name of team to get the messages
+    :return: None
+    """
+    api_messages = read_messages(team_name)
+
+    if isinstance(api_messages, dict):
+        refactored_messages = {}
+
+        for number, msg_list in api_messages.items():
+            if isinstance(msg_list, list):
+                for message in msg_list:
+                    refactored_messages[number] = message
+
+        if refactored_messages:
+            save_message(refactored_messages)
+
+
+"""def get_message_by_id(message_id: int) -> dict:
+    """"""
     Retrieves targeted messages by ID
 
     :param message_id:  ID of the targeted message to retrieve
 
     :return: dict: dictionary with message details for target id
                     if id is invalid, returns empty dictionary
-    """
+    """"""
     with open(STORAGE_FILE, "r", encoding="utf-8") as file:
         messages = json.load(file)
 
     return messages.get(str(message_id), {})
+""""""
 
-
-def get_messages_by_number(phone_number: str) -> dict:
-    """
+""""""def get_messages_by_number(phone_number: str) -> dict:
+    """"""
     Retrieves targeted messages by phone number.
 
     :param phone_number: Target phone number to retrieve messages
 
     :return: dict: A dictionary with ID as Keys and values are details
-    """
+    """"""
     with open(STORAGE_FILE, "r", encoding="utf-8") as file:
         messages = json.load(file)
 
         # Dict comprehension ** One line dict maker
     return {k: v for k, v in messages.items() if v["phone_number"] == phone_number}
+"""
