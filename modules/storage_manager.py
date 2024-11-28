@@ -62,15 +62,20 @@ def save_messages_api(team_name: str) -> None:
     :return: None
     """
     try:
-        api_messages = read_messages(team_name)
+        status_code, api_messages = read_messages(team_name)
+
+        if status_code != 200:
+            print(f"Error: Failed to fetch messages. Status code: {status_code}, Error: {api_messages}")
+            return
 
         if isinstance(api_messages, dict):
-
             for number, msg_list in api_messages.items():
                 if isinstance(msg_list, list):
                     api_messages[number] = msg_list
 
             if api_messages:
                 save_message(api_messages)
+        else:
+            print(f"Unexpected message format: {api_messages}")
     except Exception as e:
-        print(f"Error from fetching or saving messages: {e}")
+        print(f"Error while fetching or saving messages: {e}")
