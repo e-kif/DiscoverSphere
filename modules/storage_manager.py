@@ -27,19 +27,31 @@ def save_message(messages: dict) -> None:
 
     :return: None
     """
-
-    with open(STORAGE_FILE, "w", encoding="utf-8") as file:
-        json.dump(messages, file, ensure_ascii=False, indent=4)
+    try:
+        with open(STORAGE_FILE, "w", encoding="utf-8") as file:
+            json.dump(messages, file, ensure_ascii=False, indent=4)
+    except IOError as e:
+        print(f"Error saving messages: {e}")
 
 
 def get_all_messages() -> dict:
     """
     Gets all stored messages.
-
-    :return: dict : Keys are message ID and values are details of messages
     """
-    with open(STORAGE_FILE, "r", encoding="utf-8") as file:
-        return json.load(file)
+    try:
+        if not os.path.exists(STORAGE_FILE):
+            print(f"Storage file not found. Initializing storage: ")
+            init_storage()
+
+        with open(STORAGE_FILE, "r", encoding="utf-8") as file:
+            return json.load(file)
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON from storage: {e}. Re-init storage:")
+        init_storage()
+        return {}
+    except IOError as e:
+        print(f"Error reading from storage file: {e} ")
+        return {}
 
 
 def save_messages_api(team_name: str) -> None:
@@ -50,44 +62,16 @@ def save_messages_api(team_name: str) -> None:
     :param team_name: Name of team to get the messages
     :return: None
     """
-    api_messages = read_messages(team_name)
+    try:
+        api_messages = read_messages(team_name)
 
-    if isinstance(api_messages, dict):
+        if isinstance(api_messages, dict):
 
-        for number, msg_list in api_messages.items():
-            if isinstance(msg_list, list):
-                api_messages[number] = msg_list
+            for number, msg_list in api_messages.items():
+                if isinstance(msg_list, list):
+                    api_messages[number] = msg_list
 
-        if api_messages:
-            save_message(api_messages)
-
-
-"""def get_message_by_id(message_id: int) -> dict:
-    """"""
-    Retrieves targeted messages by ID
-
-    :param message_id:  ID of the targeted message to retrieve
-
-    :return: dict: dictionary with message details for target id
-                    if id is invalid, returns empty dictionary
-    """"""
-    with open(STORAGE_FILE, "r", encoding="utf-8") as file:
-        messages = json.load(file)
-
-    return messages.get(str(message_id), {})
-""""""
-
-""""""def get_messages_by_number(phone_number: str) -> dict:
-    """"""
-    Retrieves targeted messages by phone number.
-
-    :param phone_number: Target phone number to retrieve messages
-
-    :return: dict: A dictionary with ID as Keys and values are details
-    """"""
-    with open(STORAGE_FILE, "r", encoding="utf-8") as file:
-        messages = json.load(file)
-
-        # Dict comprehension ** One line dict maker
-    return {k: v for k, v in messages.items() if v["phone_number"] == phone_number}
-"""
+            if api_messages:
+                save_message(api_messages)
+    except Exception as e:
+        print(f"Error from fetching or saving messages: {e}")
