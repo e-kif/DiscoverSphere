@@ -14,12 +14,12 @@ def get_api_key():
 
 
 def geocode_city_finder(city_name, api_key):
-    """We are using Geoapify Geocoding API to fetch
+    """We are using Geo-apify Geocoding API to fetch
         latitude and longitude of a city
 
         params:
             city_name (str): Name of the city,
-            api_key (str): Geoapify API key
+            api_key (str): Geo-apify API key
 
         Returns:
             tuple: Lat and Long of the city or None if not found

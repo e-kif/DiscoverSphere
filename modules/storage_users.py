@@ -95,7 +95,7 @@ def get_user(phone_number: str) -> dict:
 
     :param phone_number: User's phone number
 
-    :return: Dictonary of user's data or None if user doesn't exist.
+    :return: Dictionary of user's data or None if user doesn't exist.
     """
     users = load_user()
     return users.get(phone_number)
