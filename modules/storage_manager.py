@@ -1,6 +1,5 @@
 import json
 import os
-# from datetime import datetime
 from messages_manager import read_messages
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
