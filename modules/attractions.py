@@ -148,8 +148,7 @@ def search_and_display(city_name, attraction_type, radius=5000):
     return status_code, attractions
 
 
-# Test this example
-if __name__ == "__main__":
+def main():
     geo_key = get_api_key()
     lat = 35.6895  # Tokyo Latitude
     lon = 139.6917  # Tokyo Longitude
@@ -164,3 +163,8 @@ if __name__ == "__main__":
             print(f"Name: {name}, Shortened URL: {url}")
     else:
         print(f"Failed to fetch attractions in Tokyo. HTTP Status Code: {code}")
+
+
+# Test this example
+if __name__ == "__main__":
+    main()
