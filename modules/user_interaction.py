@@ -273,8 +273,9 @@ def set_attraction_type(user_number: int,
         add_log_record(200, f'user sort of got a message: {sms_text}')
         return 200, f'user sort of got a message: {sms_text}'
     elif code == 200:  # empty list
-        sms_text = ('We are not able to find something interesting with your LOCATION and TYPE.\n'
-                    'Try changing TYPE or LOCATION and TYPE.')
+        start = 'We are not able to find something interesting with your LOCATION and TYPE. '
+        end = 'Try changing TYPE or LOCATION and TYPE.'
+        sms_text = start + end
         if SEND_SMS:
             sms_code, sms_message = send_documentation(user_number, sms_text)
             add_log_record(sms_code, sms_message + sms_text)
