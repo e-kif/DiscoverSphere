@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import requests
 import os
-from sms_builder import make_url_short
+from modules.sms_builder import make_url_short
 load_dotenv()
 
 
