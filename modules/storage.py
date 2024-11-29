@@ -8,7 +8,7 @@ we should save
 - last attraction that we sent to the user
 """
 
-import user_tracker
+import json
 
 class User:
     def __init__(self, phone_number):
@@ -30,13 +30,42 @@ class User:
     def update_last_sent_attraction(self, attraction):
         self.last_sent_attraction = attraction
 
+    def to_dict(self):
+        return {
+            "phone_number": self.phone_number,
+            "last_location": self.last_location,
+            "last_attraction_type": self.last_attraction_type,
+            "attractions_list": self.attractions_list,
+            "last_sent_attraction": self.last_sent_attraction
+        }
+
 class UserTracker:
-    def __init__(self):
-        self.users = {}  # Dictionary to store users by phone number
+    def __init__(self, filename="user_data.json"):
+        self.filename = filename
+        self.users = {}
+        self.load_users()
+
+    def load_users(self):
+        try:
+            with open(self.filename, 'r') as f:
+                data = json.load(f)
+                for user_data in data:
+                    user = User(user_data['phone_number'])
+                    for key, value in user_data.items():
+                        setattr(user, key, value)
+                    self.users[user.phone_number] = user
+        except FileNotFoundError:
+            pass  # File doesn't exist, create a new one
+
+    def save_users(self):
+        user_data = [user.to_dict() for user in self.users.values()]
+        with open(self.filename, 'w') as f:
+            json.dump(user_data, f, indent=4)
 
     def add_user(self, phone_number):
         if phone_number not in self.users:
             self.users[phone_number] = User(phone_number)
+            self.save_users()
 
     def get_user(self, phone_number):
         return self.users.get(phone_number)
@@ -46,3 +75,4 @@ class UserTracker:
         if user:
             for key, value in kwargs.items():
                 setattr(user, key, value)
+            self.save_users()
