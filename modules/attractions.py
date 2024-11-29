@@ -108,7 +108,7 @@ def final_fetch(lat, long, radius, attr_type, api_key):
         address_line1 = attr["properties"]["address_line1"]
         coord = attr["geometry"]["coordinates"]
         url_base = "https://www.google.com/maps/place/"
-        url_attr = f"{url_base}{coord[1]}{coord[0]}"
+        url_attr = f"{url_base}{coord[1]},{coord[0]}"
         short_url = make_url_short(url_attr)
         if address_line1:
             results.append((address_line1, short_url))
