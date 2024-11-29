@@ -1,6 +1,6 @@
 import json
 import os
-from messages_manager import read_messages
+from modules.messages_manager import read_messages
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STORAGE_DIR = os.path.join(BASE_DIR, "storage")
