@@ -1,7 +1,7 @@
 """Module interacts with user persistence storage"""
 import os
 import json
-from attractions import final_fetch, get_api_key
+from modules.attractions import final_fetch, get_api_key
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
