@@ -1,32 +1,27 @@
+import time
+
 import modules.user_interaction as ux
+from modules.storage_manager import get_all_messages as get_storage_messages
 
-DEBUG = True
-SEND_SMS = False
-
-
-
-# main loop
-
-# get messages
-# parse messages
-# execute commands
-
-# fetch attraction places from api
-# user init:
-# - location
-# - type of attraction
-
-# persistent storage (keep track of app and user status and received messages
-
-# parce response, create sms text (<= 160 symbols or <= 70 for umlauts)
+DEBUG = False
+SEND_SMS = True
+TIMEOUT = 20
 
 
-""" main while loop:
-- check for messages every 10s
-- if there any new messages check the user from storage
+def main():
+    """Main function loop that fetches messages from Masterschool API,
+    compares them against stored messages. Processes new messages if found"""
+    while True:
+        code, api_messages = ux.get_received_messages_api()
+        if code == 200:
+            storage_messages = get_storage_messages()
+            new_messages = ux.filter_new_messages(storage_messages, api_messages)
+            if new_messages:
+                for message in new_messages:
+                    ux.process_new_message(message)
 
-1. ask for a location
-2. ask for a type of attraction
-3. send sms
-"""
+        time.sleep(TIMEOUT)
 
+
+if __name__ == '__main__':
+    main()
